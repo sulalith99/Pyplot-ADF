@@ -17,5 +17,6 @@ A combination of shell and Python scripts to extract and generate absorption plo
 
 * Pyplot will initially request the user about the need of a Python virtual environment.
 * this is not needed if the calculations are done in a system where all the Python modules are installed. if not you can use the Python virtual environment.
+* following indicates one of the example graphs that generated from this scripts.
 
 ![excitation-plot](https://github.com/sulalith99/Pyplot-ADF/assets/148896039/4de10d78-0cbd-4532-bb2c-967e4e0eb1c0)
