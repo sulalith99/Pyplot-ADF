@@ -1,0 +1,126 @@
+#!/bin/bash
+
+cwd=$PWD
+
+#this script will create a Python script which need a Python virtual environment
+#to install the libraries that are not currently in use in BEOCAT
+#we use 3.11.2-GCCcore-12.2.0-bare Python version
+#if you need to change the Python version use, 'module avail Python/'
+#need to have the same Python version in your virtual environment
+
+#create a Python virtual environment
+
+echo "Do you currenly have a Python virtual environment [y] or [n]?"
+read yesorno
+#yesorno=y
+
+if [[ $yesorno =~ "n" ]]
+then
+
+module load Python/3.11.2-GCCcore-12.2.0-bare
+python3 -m venv ~/PyVEn
+source ~/PyVEn/bin/activate
+
+pip install pandas --upgrade
+pip install scipy --upgrade
+pip install tabulate --upgrade
+pip install matplotlib --upgrade
+
+elif [[ $yesorno =~ "y" ]]
+then
+
+module load Python/3.11.2-GCCcore-12.2.0-bare
+source ~/PyVEn/bin/activate
+
+fi
+
+#to deactivate the Python virtual environment use deactivate
+
+echo ""
+
+#requirement of the Python script
+echo "Do you need a plotting script [y] or [n]?"
+read pyn
+#pyn=y
+
+colorpal=("#e60049" "#0bb4ff" "#50e991" "#e6d800" "#9b19f5" "#ffa300" "#dc0ab4" "#b3d4ff" "#00bfa0" "#b30000" "#7c1158" "#4421af" "#1a53ff" "#0d88e6" "#00b7c7" "#5ad45a" "#8be04e" "#ebdc78")
+arrVar=()
+
+if [[ $pyn =~ "y" ]]
+then
+
+plotlabel=0
+
+echo ""
+read -p "Number of plots: " nplots
+echo ""
+for (( q=1; q<=$((nplots)); q++ ));
+do
+read -p "Plot-$((q)) (omit any extensions): " pname
+arrVar+=("$pname")
+done
+
+#echo $arrVar
+
+echo "import matplotlib.pyplot as plt"  >> $cwd/Pyplots.py
+echo "import csv" >> $cwd/Pyplots.py
+echo "import numpy as np" >> $cwd/Pyplots.py
+echo ""  >> $cwd/Pyplots.py
+echo "#when you name the rkf files use the following format"  >> $cwd/Pyplots.py
+echo "#atom_numberofatoms_chargeofmonomer_monomerordimer"  >> $cwd/Pyplots.py
+echo "#if this format is violated, there will be an error" >> $cwd/Pyplots.py
+echo "" >> $cwd/Pyplots.py
+
+for (( j=1; j<=$((nplots)); j++ ));
+do
+  echo "intensity_$((j-1)) = []"  >> $cwd/Pyplots.py
+  echo "energy_$((j-1)) = []"  >> $cwd/Pyplots.py
+  echo ""  >> $cwd/Pyplots.py
+done
+
+for (( j=1; j<=$((nplots)); j++ ));
+do
+
+  IFS="_" read -ra plotlabel <<< "${arrVar[$((j-1))]}"
+  arrlength=${#plotlabel[@]}
+  echo "with open('${arrVar[$((j-1))]}.csv', 'r') as datafile:"  >> $cwd/Pyplots.py
+  echo "    plotting = csv.reader(datafile, delimiter=' ')"  >> $cwd/Pyplots.py
+  echo ""  >> $cwd/Pyplots.py
+
+  echo "    for rows in plotting:"  >> $cwd/Pyplots.py
+  echo "        intensity_$((j-1))"".append(float(rows[1]))"  >> $cwd/Pyplots.py
+  echo "        energy_$((j-1))"".append(float(rows[0]))"  >> $cwd/Pyplots.py
+  echo "datafile.close()" >> $cwd/Pyplots.py
+  echo "" >> $cwd/Pyplots.py
+  if [[ $((arrlength)) -eq 4 ]]
+  then
+   echo "plt.plot(energy_$((j-1)),intensity_$((j-1)),label='\$${plotlabel[$((0))]}_{${plotlabel[$((1))]}}^{${plotlabel[$((2))]}}\$  ${plotlabel[$((3))]}', linewidth = '1.0', color='${colorpal[$((j-1))]}')" >> $cwd/Pyplots.py
+  elif [[ $((arrlength)) -eq 7 ]]
+  then
+   echo "plt.plot(energy_$((j-1)),intensity_$((j-1)),label='\$${plotlabel[$((0))]}_{${plotlabel[$((1))]}}^{${plotlabel[$((2))]}}\$ & \$${plotlabel[$((3))]}_{${plotlabel[$((4))]}}^{${plotlabel[$((5))]}}\$  ${plotlabel[$((6))]}', linewidth = '1.0', color='${colorpal[$((j-1))]}')" >> $cwd/Pyplots.py
+  fi
+  echo "" >> $cwd/Pyplots.py
+done
+
+echo "#you can change the location of the legend from the following line" >> $cwd/Pyplots.py
+echo "plt.legend(loc='center right', bbox_to_anchor=(1.40, 0.5))" >> $cwd/Pyplots.py
+echo "#plt.title('')" >> $cwd/Pyplots.py
+echo "plt.xlabel('Energy (eV)')" >> $cwd/Pyplots.py
+echo "plt.ylabel('Intensity (arb. units)')" >> $cwd/Pyplots.py
+
+#if you need to change the range of the x and y axes, change the following two lines
+echo "#if you need to change the range of the x and y axes, change the following two lines" >> $cwd/Pyplots.py
+echo "plt.xlim(1,4)" >> $cwd/Pyplots.py
+echo "#plt.ylim(0,1)" >> $cwd/Pyplots.py
+
+#save the plot as an PNG.
+echo "plt.savefig('excitation-plot.png',dpi=900,bbox_inches=\"tight\")" >> $cwd/Pyplots.py
+
+python3 $cwd/Pyplots.py
+
+elif [[  $pyn =~ "n" ]]
+then
+
+python3 $cwd/Pyplots.py
+
+fi
