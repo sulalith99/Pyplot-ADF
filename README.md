@@ -3,8 +3,8 @@ A combination of shell and Python scripts to extract and generate absorption plo
 
 * a.out and convert.sh scripts will extract the excitations and oscillator strengths from the ADF.out file.
 * additionally, generate an abs.csv file (which includes excitation energy in both Hartree and eV units) containing the excitation results sorted by oscillator strength.
-* abs_gauss.csv file contains excitation results sorted by oscillator strengths resulted in the broadening.
 * it will then fit the data into a user defined fitting (Gaussian or Lorentzian with specific full-width half maximum value) and generate a data file that includes excitations and their arbitory intencities.
+* abs_gauss.csv file contains excitation results sorted by oscillator strengths resulted in the broadening.
 * both of these scripts are previously used in our group and the credit goes to the developer.
 * use "chmod +x a.out" and "chmod +x convert.sh" to make the script executable and then only use "./convert.sh" to extract the data. you do not need to execute a.out as it is a part of convert.sh.
 * before executing convert.sh, change the path that is initially given in the script for a.out file.
